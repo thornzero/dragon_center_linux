@@ -2,6 +2,7 @@ import 'package:dragon_center_linux/features/fan_control/presentation/viewmodels
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:dragon_center_linux/models/fan_config.dart';
+import 'package:dragon_center_linux/models/msi_config.dart';
 import 'package:dragon_center_linux/shared/services/config_manager.dart';
 import 'package:dragon_center_linux/features/fan_control/presentation/widgets/fan_curve_editor.dart';
 import 'package:dragon_center_linux/core/presentation/widgets/model_selection_dialog.dart';
@@ -1052,7 +1053,7 @@ class _DragonControlPageState extends State<DragonControlPage>
                                   overlayRadius: 20),
                               valueIndicatorShape:
                                   const PaddleSliderValueIndicatorShape(),
-                              showValueIndicator: ShowValueIndicator.always,
+                              showValueIndicator: ShowValueIndicator.onDrag,
                             ),
                             child: Slider(
                               value: FanConfig.batteryThreshold.toDouble(),
@@ -1287,7 +1288,7 @@ class _DragonControlPageState extends State<DragonControlPage>
                       children: [
                         const Text('Current Model:'),
                         Text(
-                          _configManager.currentConfig.modelCode,
+                          MSIConfig.currentModel,
                           style: const TextStyle(fontWeight: FontWeight.bold),
                         ),
                       ],

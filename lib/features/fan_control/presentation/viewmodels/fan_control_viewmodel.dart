@@ -3,6 +3,7 @@ import 'package:dragon_center_linux/shared/services/config_manager.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:dragon_center_linux/models/fan_config.dart';
+import 'package:dragon_center_linux/models/msi_config.dart';
 import 'package:dragon_center_linux/core/utils/logger.dart';
 import 'package:flutter/foundation.dart';
 
@@ -109,9 +110,11 @@ class DragonControlProvider extends ChangeNotifier {
       await ECHelper.write(
           FanConfig.coolerBoosterValues[0], FanConfig.coolerBoosterValues[1]);
 
-      for (int i = 0; i < 7; i++) {
+      for (int i = 0; i < FanConfig.fanAddresses[0].length; i++) {
         await ECHelper.write(
             FanConfig.fanAddresses[0][i], FanConfig.autoSpeed[0][i]);
+      }
+      for (int i = 0; i < FanConfig.fanAddresses[1].length; i++) {
         await ECHelper.write(
             FanConfig.fanAddresses[1][i], FanConfig.autoSpeed[1][i]);
       }
@@ -133,8 +136,10 @@ class DragonControlProvider extends ChangeNotifier {
           .clamp(config.minBasicOffset, config.maxBasicOffset);
       final speeds = _checkFanSpeeds(FanConfig.autoSpeed, offset);
 
-      for (int i = 0; i < 7; i++) {
+      for (int i = 0; i < FanConfig.fanAddresses[0].length; i++) {
         await ECHelper.write(FanConfig.fanAddresses[0][i], speeds[0][i]);
+      }
+      for (int i = 0; i < FanConfig.fanAddresses[1].length; i++) {
         await ECHelper.write(FanConfig.fanAddresses[1][i], speeds[1][i]);
       }
     } catch (e) {
@@ -145,30 +150,37 @@ class DragonControlProvider extends ChangeNotifier {
 
   Future<void> applyAdvancedProfile() async {
     try {
-      final config = _configManager.currentConfig;
-      final cpuGen = config.defaultCpuGen;
-      final fanModeValues = config.cpuGenAutoAdvancedValues[cpuGen]!;
-      final coolerBoostValues = config.cpuGenCoolerBoosterValues[cpuGen]!;
+      await ECHelper.write(
+          FanConfig.autoAdvancedValues[0],
+          FanConfig.autoAdvancedValues[
+              2]); // Write fan mode address with advanced value
+      await ECHelper.write(
+          FanConfig.coolerBoosterValues[0],
+          FanConfig.coolerBoosterValues[
+              1]); // Write cooler boost address with off value
 
-      await ECHelper.write(fanModeValues[0],
-          fanModeValues[2]); // Write fan mode address with advanced value (140)
-      await ECHelper.write(coolerBoostValues[0],
-          coolerBoostValues[1]); // Write cooler boost address with off value
-
-      for (int i = 0; i < 6; i++) {
-        await ECHelper.write(0x6a + i, FanConfig.cpuFanCurve.temperatures[i]);
+      final cpuTempAddrs = MSIConfig.cpuTempAddresses;
+      for (int i = 0; i < cpuTempAddrs.length; i++) {
+        await ECHelper.write(
+            cpuTempAddrs[i], FanConfig.cpuFanCurve.temperatures[i]);
       }
 
-      for (int i = 0; i < 6; i++) {
-        await ECHelper.write(0x82 + i, FanConfig.gpuFanCurve.temperatures[i]);
+      final gpuTempAddrs = MSIConfig.gpuTempAddresses;
+      for (int i = 0; i < gpuTempAddrs.length; i++) {
+        await ECHelper.write(
+            gpuTempAddrs[i], FanConfig.gpuFanCurve.temperatures[i]);
       }
 
-      for (int i = 0; i < 7; i++) {
-        await ECHelper.write(0x72 + i, FanConfig.cpuFanCurve.fanSpeeds[i]);
+      final cpuFanAddrs = MSIConfig.cpuFanSpeedAddresses;
+      for (int i = 0; i < cpuFanAddrs.length; i++) {
+        await ECHelper.write(
+            cpuFanAddrs[i], FanConfig.cpuFanCurve.fanSpeeds[i]);
       }
 
-      for (int i = 0; i < 7; i++) {
-        await ECHelper.write(0x8a + i, FanConfig.gpuFanCurve.fanSpeeds[i]);
+      final gpuFanAddrs = MSIConfig.gpuFanSpeedAddresses;
+      for (int i = 0; i < gpuFanAddrs.length; i++) {
+        await ECHelper.write(
+            gpuFanAddrs[i], FanConfig.gpuFanCurve.fanSpeeds[i]);
       }
 
       await FanConfig.saveConfig();
@@ -224,9 +236,8 @@ class DragonControlProvider extends ChangeNotifier {
     _isProcessing = true;
     notifyListeners();
     try {
-      final config = _configManager.currentConfig;
       final value = threshold + 128;
-      await ECHelper.write(config.batteryThresholdAddress, value);
+      await ECHelper.write(MSIConfig.batteryChargingThresholdAddress, value);
       FanConfig.batteryThreshold = threshold;
       await FanConfig.saveConfig();
       logger.info('Set battery threshold to $threshold%');
@@ -244,22 +255,21 @@ class DragonControlProvider extends ChangeNotifier {
     _isProcessing = true;
     notifyListeners();
     try {
-      final config = _configManager.currentConfig;
       int value;
       switch (level.toLowerCase()) {
         case 'off':
-          value = config.usbBacklightOff;
+          value = MSIConfig.usbBacklightOff;
           break;
         case 'half':
-          value = config.usbBacklightHalf;
+          value = MSIConfig.usbBacklightHalf;
           break;
         case 'full':
-          value = config.usbBacklightFull;
+          value = MSIConfig.usbBacklightFull;
           break;
         default:
           throw ArgumentError('Invalid USB backlight level: $level');
       }
-      await ECHelper.write(config.usbBacklightAddress, value);
+      await ECHelper.write(MSIConfig.usbBacklightAddress, value);
     } catch (e) {
       logger.severe('Failed to set USB backlight: $e');
       rethrow;

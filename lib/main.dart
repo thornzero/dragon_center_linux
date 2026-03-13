@@ -1,6 +1,7 @@
 import 'package:dragon_center_linux/app.dart';
 import 'package:dragon_center_linux/core/utils/logger.dart';
 import 'package:dragon_center_linux/models/fan_config.dart';
+import 'package:dragon_center_linux/models/msi_config.dart';
 import 'package:dragon_center_linux/features/fan_control/presentation/viewmodels/fan_control_viewmodel.dart';
 
 import 'package:dragon_center_linux/core/services/tray_service.dart';
@@ -30,6 +31,7 @@ void main() async {
   await initializeLogger();
   logger.info('Starting Dragon Center application');
 
+  await MSIConfig.loadConfig();
   await FanConfig.loadConfig();
 
   // Apply saved configuration at startup

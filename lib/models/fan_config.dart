@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:dragon_center_linux/models/msi_config.dart';
 import 'package:dragon_center_linux/shared/services/config_manager.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:dragon_center_linux/features/fan_control/models/fan_curve.dart';
@@ -25,6 +26,23 @@ class FanConfig {
     final prefs = await SharedPreferences.getInstance();
     try {
       await _configManager.detectModel();
+
+      // Load selected model or fallback to detected
+      String? savedModel = prefs.getString('selected_model');
+      if (savedModel != null) {
+        MSIConfig.setCurrentModel(savedModel);
+      } else {
+        // Try to use detected model if available in config
+        try {
+          String detectedModel = _configManager.currentConfig.modelCode;
+          if (MSIConfig.availableModels.contains(detectedModel)) {
+            MSIConfig.setCurrentModel(detectedModel);
+          }
+        } catch (_) {
+          // Ignore if no model detected
+        }
+      }
+
       final config = _configManager.currentConfig;
 
       profile = _safeParseInt(prefs.getInt('profile'), config.defaultProfile);
@@ -36,18 +54,31 @@ class FanConfig {
       cpuGen = 1;
 
       autoSpeed = _parseNestedList(prefs.getString('autoSpeed')) ??
-          config.defaultAutoSpeed;
+          [MSIConfig.cpuFanSpeeds, MSIConfig.gpuFanSpeeds];
       advancedSpeed = _parseNestedList(prefs.getString('advSpeed')) ??
-          config.defaultAdvancedSpeed;
+          [MSIConfig.cpuFanSpeeds, MSIConfig.gpuFanSpeeds];
 
-      autoAdvancedValues = _parseList(prefs.getString('autoAdvValues'),
-          config.cpuGenAutoAdvancedValues[cpuGen]!);
-      coolerBoosterValues = _parseList(prefs.getString('coolerBoosterValues'),
-          config.cpuGenCoolerBoosterValues[cpuGen]!);
+      // Auto mode (12) is hardcoded for now as it's consistent across models
+      autoAdvancedValues = [MSIConfig.fanModeAddress, 12, MSIConfig.fanMode];
 
-      fanAddresses = config.fanAddresses;
-      tempAddresses = config.tempAddresses;
-      rpmAddresses = config.rpmAddresses;
+      coolerBoosterValues = [
+        MSIConfig.coolerBoostAddress,
+        MSIConfig.coolerBoostOff,
+        MSIConfig.coolerBoostOn
+      ];
+
+      fanAddresses = [
+        MSIConfig.cpuFanSpeedAddresses,
+        MSIConfig.gpuFanSpeedAddresses
+      ];
+      tempAddresses = [
+        MSIConfig.realtimeCpuTempAddress,
+        MSIConfig.realtimeGpuTempAddress
+      ];
+      rpmAddresses = [
+        MSIConfig.realtimeCpuFanRpmAddress,
+        MSIConfig.realtimeGpuFanRpmAddress
+      ];
 
       try {
         final cpuCurveStr = prefs.getString('cpuFanCurve');
@@ -83,8 +114,6 @@ class FanConfig {
     }
   }
 
-
-
   static int _safeParseInt(int? value, int defaultValue) {
     return value ?? defaultValue;
   }
@@ -101,28 +130,35 @@ class FanConfig {
     }
   }
 
-  static List<int> _parseList(String? value, List<int> fallback) {
-    try {
-      if (value == null) return fallback;
-      return value.split(',').map((s) => int.tryParse(s) ?? 0).toList();
-    } catch (e) {
-      return fallback;
-    }
-  }
-
   static void _resetToDefaults() {
     final config = _configManager.currentConfig;
     profile = config.defaultProfile;
     batteryThreshold = config.defaultBatteryThreshold;
     basicOffset = config.defaultBasicOffset;
     cpuGen = 1; // Set to 1 for 10th gen
-    autoSpeed = List.from(config.defaultAutoSpeed);
-    advancedSpeed = List.from(config.defaultAdvancedSpeed);
-    autoAdvancedValues = List.from(config.cpuGenAutoAdvancedValues[cpuGen]!);
-    coolerBoosterValues = List.from(config.cpuGenCoolerBoosterValues[cpuGen]!);
-    fanAddresses = config.fanAddresses;
-    tempAddresses = config.tempAddresses;
-    rpmAddresses = config.rpmAddresses;
+    autoSpeed = [MSIConfig.cpuFanSpeeds, MSIConfig.gpuFanSpeeds];
+    advancedSpeed = [MSIConfig.cpuFanSpeeds, MSIConfig.gpuFanSpeeds];
+
+    autoAdvancedValues = [MSIConfig.fanModeAddress, 12, MSIConfig.fanMode];
+    coolerBoosterValues = [
+      MSIConfig.coolerBoostAddress,
+      MSIConfig.coolerBoostOff,
+      MSIConfig.coolerBoostOn
+    ];
+
+    fanAddresses = [
+      MSIConfig.cpuFanSpeedAddresses,
+      MSIConfig.gpuFanSpeedAddresses
+    ];
+    tempAddresses = [
+      MSIConfig.realtimeCpuTempAddress,
+      MSIConfig.realtimeGpuTempAddress
+    ];
+    rpmAddresses = [
+      MSIConfig.realtimeCpuFanRpmAddress,
+      MSIConfig.realtimeGpuFanRpmAddress
+    ];
+
     cpuFanCurve = FanCurve.defaults();
     gpuFanCurve = FanCurve.gpuDefaults();
   }

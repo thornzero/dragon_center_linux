@@ -1,3 +1,4 @@
+import 'package:dragon_center_linux/models/fan_config.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:dragon_center_linux/models/msi_config.dart';
@@ -11,18 +12,7 @@ class ModelSelectionDialog extends StatefulWidget {
 
 class _ModelSelectionDialogState extends State<ModelSelectionDialog> {
   String? _selectedModel;
-  final List<String> _availableModels = [
-    '16U5EMS1',
-    '16U4EMS1',
-    '16U3EMS1',
-    '16Q2EMS2',
-    '16Q2EWS1',
-    '16W1EMS1',
-    '17A6EMS1',
-    '17B1EMS1',
-    '17B5EMS1',
-    '17G1EMS1',
-  ];
+  List<String> get _availableModels => MSIConfig.availableModels..sort();
 
   @override
   void initState() {
@@ -42,6 +32,8 @@ class _ModelSelectionDialogState extends State<ModelSelectionDialog> {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('selected_model', _selectedModel!);
       MSIConfig.setCurrentModel(_selectedModel!);
+      await FanConfig
+          .loadConfig(); // Reload fan config to apply new model addresses
     }
   }
 
@@ -59,7 +51,9 @@ class _ModelSelectionDialogState extends State<ModelSelectionDialog> {
             ),
             const SizedBox(height: 16),
             DropdownButtonFormField<String>(
-              value: _selectedModel,
+              key: ValueKey(_selectedModel ?? 'default'),
+              initialValue:
+                  _selectedModel, // Changed from value to initialValue per deprecation warning
               decoration: const InputDecoration(
                 labelText: 'Laptop Model',
                 border: OutlineInputBorder(),

@@ -16,6 +16,17 @@ class MSIConfig {
     }
   }
 
+  static List<String> get availableModels {
+    return _config.keys
+        .where((key) =>
+            key != 'COOLER_BOOST' &&
+            key != 'USB_BACKLIGHT' &&
+            key != 'MSI_ADDRESS_DEFAULT')
+        .toList();
+  }
+
+  static String get currentModel => _currentModel;
+
   static void setCurrentModel(String model) {
     _currentModel = model;
   }

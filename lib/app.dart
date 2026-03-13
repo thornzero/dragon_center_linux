@@ -48,7 +48,7 @@ class _DragonCentreAppState extends State<DragonCentreApp> with WindowListener {
           surface: const Color(0xFF121212),
         ),
         scaffoldBackgroundColor: const Color(0xFF121212),
-        cardTheme: CardTheme(
+        cardTheme: CardThemeData(
           elevation: 4,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
@@ -78,7 +78,7 @@ class _DragonCentreAppState extends State<DragonCentreApp> with WindowListener {
           overlayColor: Color(0x29D32F2F),
           trackHeight: 4,
         ),
-        dialogTheme: DialogTheme(
+        dialogTheme: DialogThemeData(
           backgroundColor: const Color(0xFF1E1E1E),
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),

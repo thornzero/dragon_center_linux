@@ -50,7 +50,7 @@ class TrayService {
 
   String _getIconPath() {
     // Check if running in production environment
-    final prodPath =
+    const prodPath =
         '/usr/local/lib/dragoncenter/data/flutter_assets/assets/images/dragon.png';
 
     if (File(prodPath).existsSync()) {
