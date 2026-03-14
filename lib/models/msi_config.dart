@@ -3,13 +3,18 @@ import 'package:flutter/services.dart';
 import 'package:dragon_center_linux/core/utils/logger.dart';
 
 class MSIConfig {
+  static const String _configPath = 'assets/config/config.json';
+
   static Map<String, dynamic> _config = {};
   static String _currentModel = '16U5EMS1';
 
+  static Future<String> _loadAsset() async {
+    return await rootBundle.loadString(_configPath);
+  }
+
   static Future<void> loadConfig() async {
     try {
-      final String jsonString =
-          await rootBundle.loadString('assets/config/config.json');
+      final String jsonString = await _loadAsset();
       _config = json.decode(jsonString);
     } catch (e) {
       logger.severe('Error loading MSI config: $e');
@@ -26,10 +31,7 @@ class MSIConfig {
   }
 
   static String get currentModel => _currentModel;
-
-  static void setCurrentModel(String model) {
-    _currentModel = model;
-  }
+  static set currentModel(String model) => _currentModel = model;
 
   static Map<String, dynamic> get currentModelConfig {
     return _config[_currentModel] ?? {};

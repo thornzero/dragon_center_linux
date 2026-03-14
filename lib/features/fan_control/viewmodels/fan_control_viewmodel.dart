@@ -21,7 +21,7 @@ class FanControlViewModel extends ChangeNotifier {
   Future<void> initialize() async {
     try {
       await MSIConfig.loadConfig();
-      MSIConfig.setCurrentModel('16U5EMS1');
+      MSIConfig.currentModel = '16U5EMS1';
 
       await ECHelper.write(MSIConfig.fanModeAddress, MSIConfig.fanMode);
 

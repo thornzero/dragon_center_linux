@@ -30,13 +30,13 @@ class FanConfig {
       // Load selected model or fallback to detected
       String? savedModel = prefs.getString('selected_model');
       if (savedModel != null) {
-        MSIConfig.setCurrentModel(savedModel);
+        MSIConfig.currentModel = savedModel;
       } else {
         // Try to use detected model if available in config
         try {
           String detectedModel = _configManager.currentConfig.modelCode;
           if (MSIConfig.availableModels.contains(detectedModel)) {
-            MSIConfig.setCurrentModel(detectedModel);
+            MSIConfig.currentModel = detectedModel;
           }
         } catch (_) {
           // Ignore if no model detected

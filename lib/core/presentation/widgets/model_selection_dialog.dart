@@ -31,7 +31,7 @@ class _ModelSelectionDialogState extends State<ModelSelectionDialog> {
     if (_selectedModel != null) {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('selected_model', _selectedModel!);
-      MSIConfig.setCurrentModel(_selectedModel!);
+      MSIConfig.currentModel = _selectedModel!;
       await FanConfig
           .loadConfig(); // Reload fan config to apply new model addresses
     }

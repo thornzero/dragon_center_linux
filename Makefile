@@ -10,6 +10,7 @@ build:
 
 install: build
 	@./scripts/install_binary.sh $(BUILD_DIR) $(INSTALL_DIR)
+	@./scripts/install_service.sh install-service
 
 restart:
 	@./scripts/restart_service.sh $(SERVICE)

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Ensure script is run as root
 if [ "$(id -u)" -ne 0 ]; then
@@ -83,16 +83,16 @@ Wants=display-manager.service
 Type=simple
 # Run as root so the app has sudo privileges
 User=root
+Environment=DISPLAY=$USER_DISPLAY
+Environment=XAUTHORITY=$USER_XAUTHORITY
 # allow root to talk to the X session
-ExecStartPre=/bin/bash -lc "xhost +SI:localuser:root"
+ExecStartPre=-/bin/bash -lc "DISPLAY=$USER_DISPLAY XAUTHORITY=$USER_XAUTHORITY xhost +SI:localuser:root"
 # Optional delay to let everything settle
 ExecStartPre=/bin/sleep 10
 ExecStart=$BINARY_PATH
 WorkingDirectory=$WORKING_DIR
 Restart=always
 RestartSec=5
-Environment=DISPLAY=$USER_DISPLAY
-Environment=XAUTHORITY=$USER_XAUTHORITY
 ExecStop=/bin/kill -s SIGTERM \$MAINPID
 
 [Install]
